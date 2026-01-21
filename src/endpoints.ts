@@ -9,7 +9,7 @@ export interface Endpoint {
   };
 }
 
-function joinEndpointVariants(acc: Object, val: Endpoint) {
+function joinEndpointVariants(acc: { [key: string]: Endpoint }, val: Endpoint) {
   const key = `${val.endpoint} ${val.method}`;
   return {
     [key]: {

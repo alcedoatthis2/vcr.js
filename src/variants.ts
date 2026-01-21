@@ -1,6 +1,6 @@
 export function cleanupVariantsConflicts(variants: string[]): string[] {
   const variantsMap = variants.reduce(
-    (acc: Object, variant: string): Object => {
+    (acc: Record<string, string>, variant: string): Record<string, string> => {
       const [path, name] = variant.split('.');
 
       if (!path || !name) return acc;
