@@ -1,5 +1,5 @@
-import {Request} from 'express';
-import {encodeUrlParams} from '../../encodeUrlParams';
+import { Request } from 'express';
+import { encodeUrlParams } from '../../encodeUrlParams';
 
 export default function getFixtureVariant(
   req: Request,

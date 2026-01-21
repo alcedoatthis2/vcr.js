@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export interface FixturesMap {[key: string]: string; };
+export interface FixturesMap {[key: string]: string; }
 
 const SUPPORTED_METHODS = new Set(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']);
 

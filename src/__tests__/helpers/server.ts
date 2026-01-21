@@ -1,5 +1,5 @@
-import * as express from "express";
-import handleMockRequest from "./handleMockRequest";
+import * as express from 'express';
+import handleMockRequest from './handleMockRequest';
 const app = express();
 
 app.use(handleMockRequest);

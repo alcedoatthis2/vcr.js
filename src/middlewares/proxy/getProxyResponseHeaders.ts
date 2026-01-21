@@ -1,5 +1,5 @@
 import getFixturePath from './getFixturePath';
-import {Request} from 'express';
+import { Request } from 'express';
 
 export default function getProxyResponseHeaders(req: Request, apiReqURL: string, outputDir?: string) {
   const proxyHeaders = {
@@ -12,4 +12,4 @@ export default function getProxyResponseHeaders(req: Request, apiReqURL: string,
     proxyHeaders['x-write-fixture-attempt-path'] = getFixturePath(req, outputDir);
 
   return proxyHeaders;
-};
+}

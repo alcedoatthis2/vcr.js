@@ -1,6 +1,6 @@
 import * as through from 'through';
 import * as zlib from 'zlib';
-import {Transform} from 'stream';
+import { Transform } from 'stream';
 
 const decompress = (encoding: string): Transform => {
   switch (encoding) {

@@ -1,18 +1,18 @@
-import pipeMiddlewares from "../pipeMiddlewares";
-import * as express from "express";
+import pipeMiddlewares from '../pipeMiddlewares';
+import * as express from 'express';
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 const middlewareMock = (req: any, res: any, nextFn: any) => nextFn();
 
-describe("pipeMiddlewares", () => {
-  it("should do nothing when called without middlewares", () => {
+describe('pipeMiddlewares', () => {
+  it('should do nothing when called without middlewares', () => {
     const req = {} as express.Request;
     const res = {} as express.Response;
     const next = jest.fn() as express.NextFunction;
     expect(() => pipeMiddlewares([])(req, res, next)).not.toThrow();
   });
 
-  it("with one middleware should call it with provided handler arguments", () => {
+  it('with one middleware should call it with provided handler arguments', () => {
     const req = {} as express.Request;
     const res = {} as express.Response;
     const next = jest.fn() as express.NextFunction;
@@ -22,7 +22,7 @@ describe("pipeMiddlewares", () => {
     expect(m1).toBeCalledWith(req, res, next);
   });
 
-  it("should call last middleware with provided handler arguments", () => {
+  it('should call last middleware with provided handler arguments', () => {
     const req = {} as express.Request;
     const res = {} as express.Response;
     const next = jest.fn() as express.NextFunction;
@@ -33,7 +33,7 @@ describe("pipeMiddlewares", () => {
     expect(m2).toBeCalledWith(req, res, next);
   });
 
-  it("should call middlewares sequentially", () =>
+  it('should call middlewares sequentially', () =>
     new Promise<void>((resolve) => {
       const stack: number[] = [];
       const createStubMiddleware = (ms: number) =>
@@ -56,8 +56,8 @@ describe("pipeMiddlewares", () => {
       );
     }));
 
-  it("should call next with error when occured", () => {
-    const error = new Error("First middleware errored");
+  it('should call next with error when occured', () => {
+    const error = new Error('First middleware errored');
     const next = jest.fn() as express.NextFunction;
     const m1 = jest.fn((_, __, m1Next) => m1Next(error));
     const m2 = jest.fn(middlewareMock);

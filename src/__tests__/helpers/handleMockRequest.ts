@@ -1,7 +1,7 @@
 import * as zlib from 'zlib';
 import * as Stream from 'stream';
 import * as through from 'through';
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
 
 export const STATUS_TO_RESPONSE = {
   '201': null,
