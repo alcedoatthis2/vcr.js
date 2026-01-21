@@ -1,254 +1,314 @@
-import * as BluebirdPromise from 'bluebird';
-import { ChildProcess, spawn } from 'child_process';
-import { emptyDirSync, removeSync } from 'fs-extra';
-import * as path from 'path';
-import * as request from 'supertest';
-import listAllFixtures from '../listAllFixtures';
-import server from '../server';
-import kill from './helpers/killProcessTree';
+import * as BluebirdPromise from "bluebird";
+import { ChildProcess, spawn } from "child_process";
+import { emptyDirSync, removeSync } from "fs-extra";
+import * as path from "path";
+import * as request from "supertest";
+import listAllFixtures from "../listAllFixtures";
+import server from "../server";
+import kill from "./helpers/killProcessTree";
 
 let mockServer: ChildProcess;
 
 beforeAll(async () => {
   if (mockServer) return;
-  mockServer = spawn('yarn', ['ts-node', '--', 'src/__tests__/helpers/server.ts'], { stdio: [0, 1, 2] });
-  console.log('Started mock server process, PID: ', mockServer.pid);
+  mockServer = spawn(
+    "yarn",
+    ["ts-node", "--", "src/__tests__/helpers/server.ts"],
+    { stdio: [0, 1, 2] },
+  );
+  console.log("Started mock server process, PID: ", mockServer.pid);
   await BluebirdPromise.delay(3000);
 });
 
 afterAll(async () => {
-  console.log('Stopping mock server process, PID: ', mockServer.pid);
-  kill(mockServer.pid, 'SIGKILL');
+  console.log("Stopping mock server process, PID: ", mockServer.pid);
+  kill(mockServer.pid, "SIGKILL");
   await BluebirdPromise.delay(1000);
 });
 
-describe('Stub server', () => {
-  const app = server([path.join(__dirname, 'fixtures')], 'https://jsonplaceholder.typicode.com');
-
-  it('should respond with index', async () =>
-    await request(app)
-      .get('/')
-      .expect(404)
-      .then((res: request.Response) =>
-        expect(res.body.message).toEqual('STUB SERVER: Sorry but we couldn\'t find any fixture by GET /')
-      )
+describe("Stub server", () => {
+  const app = server(
+    [path.join(__dirname, "fixtures")],
+    "https://jsonplaceholder.typicode.com",
   );
 
-  it('should respond with list of possible endpoints', async () =>
+  it("should respond with index", async () =>
     await request(app)
-      .get('/')
+      .get("/")
+      .expect(404)
+      .then((res: request.Response) =>
+        expect(res.body.message).toEqual(
+          "STUB SERVER: Sorry but we couldn't find any fixture by GET /",
+        ),
+      ));
+
+  it("should respond with list of possible endpoints", async () =>
+    await request(app)
+      .get("/")
       .expect(404)
       .then((res: request.Response) => {
         expect(res.body.endpoints).toEqual([
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites/1',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites/1",
+            method: "GET",
             variants: {
-              default: path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default.json')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default.json",
+              ),
+            },
           },
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites",
+            method: "GET",
             variants: {
-              'page=5&size=10': path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10.json'),
-            }
+              "page=5&size=10": path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10.json",
+              ),
+            },
           },
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}",
+            method: "GET",
             variants: {
-              default: path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default.js')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default.js",
+              ),
+            },
           },
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dtm/events',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dtm/events",
+            method: "GET",
             variants: {
-              default: path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dtm/events/GET.default.json')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dtm/events/GET.default.json",
+              ),
+            },
           },
           {
-            endpoint: '/express-handler',
-            method: 'POST',
+            endpoint: "/express-handler",
+            method: "POST",
             variants: {
-              default: path.join(__dirname, 'fixtures/express-handler/POST.default.js')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/express-handler/POST.default.js",
+              ),
+            },
           },
         ]);
-      })
-  );
+      }));
 
-  it('should respond with empty list matched endpoints when nothing found', async () =>
+  it("should respond with empty list matched endpoints when nothing found", async () =>
     await request(app)
-      .get('/nonexistingEndpoint')
+      .get("/nonexistingEndpoint")
       .expect(404)
       .then((res: request.Response) => {
         expect(res.body.matchedEndpoints).toEqual([]);
-      })
-  );
+      }));
 
-  it('should respond with list of matched endpoints for existing ones', async () =>
+  it("should respond with list of matched endpoints for existing ones", async () =>
     await request(app)
-      .get('/cnx-gbl-org-quality/qa/v1/dm/jobsites')
+      .get("/cnx-gbl-org-quality/qa/v1/dm/jobsites")
       .expect(404)
       .then((res: request.Response) => {
         expect(res.body.matchedEndpoints).toEqual([
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites/1',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites/1",
+            method: "GET",
             variants: {
-              default: path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default.json')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default.json",
+              ),
+            },
           },
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites",
+            method: "GET",
             variants: {
-              'page=5&size=10': path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10.json'),
-            }
+              "page=5&size=10": path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10.json",
+              ),
+            },
           },
           {
-            endpoint: '/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}',
-            method: 'GET',
+            endpoint: "/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}",
+            method: "GET",
             variants: {
-              default: path.join(__dirname, 'fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default.js')
-            }
+              default: path.join(
+                __dirname,
+                "fixtures/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default.js",
+              ),
+            },
           },
         ]);
-      })
-  );
+      }));
 
-  it('should return default fixture', async () => {
+  it("should return default fixture", async () => {
     await request(app)
-      .get('/cnx-gbl-org-quality/qa/v1/dm/jobsites/10')
+      .get("/cnx-gbl-org-quality/qa/v1/dm/jobsites/10")
       .expect(200)
-      .then((res: request.Response) => expect(res.body).toEqual({ id: '10' }));
+      .then((res: request.Response) => expect(res.body).toEqual({ id: "10" }));
   });
 
-  it('should return fixture based on url params', async () => {
+  it("should return fixture based on url params", async () => {
     await request(app)
-      .get('/cnx-gbl-org-quality/qa/v1/dm/jobsites?size=10&page=5')
+      .get("/cnx-gbl-org-quality/qa/v1/dm/jobsites?size=10&page=5")
       .expect(200)
-      .then((res: request.Response) => expect(res.body).toEqual({ jobsites: [{ id: 1 }, { id: 2 }, { id: 3 }] }));
+      .then((res: request.Response) =>
+        expect(res.body).toEqual({
+          jobsites: [{ id: 1 }, { id: 2 }, { id: 3 }],
+        }),
+      );
   });
 
-  it('should return error when error in fixture', async () => {
+  it("should return error when error in fixture", async () => {
     await request(app)
-      .get('/cnx-gbl-org-quality/qa/v1/dm/jobsites/returnError')
+      .get("/cnx-gbl-org-quality/qa/v1/dm/jobsites/returnError")
       .expect(500)
       .then((res: request.Response) =>
-        expect(res.body.error.message).toEqual('Something went wrong in fixture')
+        expect(res.body.error.message).toEqual(
+          "Something went wrong in fixture",
+        ),
       );
   });
 
-  it('should return all setted variants', async () => {
-    await request.agent(app)
-      .get('/variants')
-      .set('Cookie', 'variants=/foo/bar/GET.unauthorized')
+  it("should return all setted variants", async () => {
+    await request
+      .agent(app)
+      .get("/variants")
+      .set("Cookie", "variants=/foo/bar/GET.unauthorized")
       .expect(200)
       .then((res: request.Response) =>
-        expect(res.body.variants).toEqual(['/foo/bar/GET.unauthorized'])
+        expect(res.body.variants).toEqual(["/foo/bar/GET.unauthorized"]),
       );
   });
 
-  it('should return all possible variants', async () => {
+  it("should return all possible variants", async () => {
     await request(app)
-      .get('/variants')
+      .get("/variants")
       .expect(200)
       .then((res: request.Response) =>
         expect(res.body.possibleVariants).toEqual([
-          '/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default',
-          '/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10',
-          '/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default',
-          '/cnx-gbl-org-quality/qa/v1/dtm/events/GET.default',
-          '/express-handler/POST.default',
-        ])
+          "/cnx-gbl-org-quality/qa/v1/dm/jobsites/1/GET.default",
+          "/cnx-gbl-org-quality/qa/v1/dm/jobsites/GET.page=5&size=10",
+          "/cnx-gbl-org-quality/qa/v1/dm/jobsites/{id}/GET.default",
+          "/cnx-gbl-org-quality/qa/v1/dtm/events/GET.default",
+          "/express-handler/POST.default",
+        ]),
       );
   });
 
-  it('should add variant to cookie by calling variants endpoint', async () => {
-    await request.agent(app)
-      .get('/variants?add=/fooBar/GET.blacklisted')
-      .set('Cookie', 'variants=/foo/bar/GET.unauthorized')
+  it("should add variant to cookie by calling variants endpoint", async () => {
+    await request
+      .agent(app)
+      .get("/variants?add=/fooBar/GET.blacklisted")
+      .set("Cookie", "variants=/foo/bar/GET.unauthorized")
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.body.variants).toEqual(['/foo/bar/GET.unauthorized', '/fooBar/GET.blacklisted']);
-        expect(res.header['set-cookie'][0]).toEqual(`variants=/foo/bar/GET.unauthorized,/fooBar/GET.blacklisted; Path=/`);
+        expect(res.body.variants).toEqual([
+          "/foo/bar/GET.unauthorized",
+          "/fooBar/GET.blacklisted",
+        ]);
+        expect(res.header["set-cookie"][0]).toEqual(
+          `variants=/foo/bar/GET.unauthorized,/fooBar/GET.blacklisted; Path=/`,
+        );
       });
   });
 
-  it('should clear variants in cookie by calling variants endpoint with clear flag', async () => {
-    await request.agent(app)
-      .get('/variants?clear=t')
-      .set('Cookie', 'variants=/foo/bar/GET.unauthorized')
+  it("should clear variants in cookie by calling variants endpoint with clear flag", async () => {
+    await request
+      .agent(app)
+      .get("/variants?clear=t")
+      .set("Cookie", "variants=/foo/bar/GET.unauthorized")
       .expect(200)
       .then((res: request.Response) => {
         expect(res.body.variants).toEqual([]);
-        expect(res.header['set-cookie'][0]).toEqual(`variants=; Path=/`);
+        expect(res.header["set-cookie"][0]).toEqual(`variants=; Path=/`);
       });
   });
 
-  it('should overwrite variants cookie by calling variants endpoint', async () => {
-    await request.agent(app)
-      .get('/variants?set=/fooBar/GET.blacklisted,/foo/GET.blacklisted')
-      .set('Cookie', 'variants=/foo/bar/GET.unauthorized')
+  it("should overwrite variants cookie by calling variants endpoint", async () => {
+    await request
+      .agent(app)
+      .get("/variants?set=/fooBar/GET.blacklisted,/foo/GET.blacklisted")
+      .set("Cookie", "variants=/foo/bar/GET.unauthorized")
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.body.variants).toEqual(['/fooBar/GET.blacklisted', '/foo/GET.blacklisted']);
-        expect(res.header['set-cookie'][0]).toEqual(`variants=/fooBar/GET.blacklisted,/foo/GET.blacklisted; Path=/`);
+        expect(res.body.variants).toEqual([
+          "/fooBar/GET.blacklisted",
+          "/foo/GET.blacklisted",
+        ]);
+        expect(res.header["set-cookie"][0]).toEqual(
+          `variants=/fooBar/GET.blacklisted,/foo/GET.blacklisted; Path=/`,
+        );
       });
   });
 
-  it('should remove duplicate variants when adding new', async () => {
-    await request.agent(app)
-      .get('/variants?add=/fooBar/GET.unauthorized')
-      .set('Cookie', 'variants=/fooBar/GET.blacklisted,/foo/bar/GET.unauthorized')
+  it("should remove duplicate variants when adding new", async () => {
+    await request
+      .agent(app)
+      .get("/variants?add=/fooBar/GET.unauthorized")
+      .set(
+        "Cookie",
+        "variants=/fooBar/GET.blacklisted,/foo/bar/GET.unauthorized",
+      )
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.body.variants).toEqual(['/foo/bar/GET.unauthorized', '/fooBar/GET.unauthorized']);
-        expect(res.header['set-cookie'][0]).toEqual(`variants=/foo/bar/GET.unauthorized,/fooBar/GET.unauthorized; Path=/`);
-
+        expect(res.body.variants).toEqual([
+          "/foo/bar/GET.unauthorized",
+          "/fooBar/GET.unauthorized",
+        ]);
+        expect(res.header["set-cookie"][0]).toEqual(
+          `variants=/foo/bar/GET.unauthorized,/fooBar/GET.unauthorized; Path=/`,
+        );
       });
   });
 
-  it('should pass GET not matched request by proxy real api', async () => {
-    await request.agent(app)
-      .get('/users')
+  it("should pass GET not matched request by proxy real api", async () => {
+    await request
+      .agent(app)
+      .get("/users")
       .expect(200)
       .then((res: request.Response) => {
         // expect(res.body.length).toEqual(10); // should return 10 users
         expect(res.body[0].id).toEqual(1); // should return id 1 for first user
-        expect(res.body[0].username).toEqual('Bret'); // should return id 1 for first user
+        expect(res.body[0].username).toEqual("Bret"); // should return id 1 for first user
       });
   });
 
-  it('should use fixturesDir specified in cassette cookie', async () => {
-    const cassetteDir = path.join(__dirname, 'customCassette');
-    await request.agent(app)
-      .get('/very-different')
-      .set('Cookie', `cassette=${cassetteDir}`)
+  it("should use fixturesDir specified in cassette cookie", async () => {
+    const cassetteDir = path.join(__dirname, "customCassette");
+    await request
+      .agent(app)
+      .get("/very-different")
+      .set("Cookie", `cassette=${cassetteDir}`)
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.body).toEqual({name: 'Forrest'});
+        expect(res.body).toEqual({ name: "Forrest" });
       });
   });
 
-  it('should parse body for POST js fixtures', async () => {
-    await request.agent(app)
-      .post('/express-handler')
-      .send({ parsed: {num: 42} })
-      .set('Accept', 'application/json')
+  it("should parse body for POST js fixtures", async () => {
+    await request
+      .agent(app)
+      .post("/express-handler")
+      .send({ parsed: { num: 42 } })
+      .set("Accept", "application/json")
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.body).toEqual({num: 42});
+        expect(res.body).toEqual({ num: 42 });
       });
   });
 });
 
-describe('Stub server in proxy mode', async () => {
-  const outputFixturesDir = path.join(__dirname, 'generatedFixtures');
-  const fixtureDirs = [path.join(__dirname, 'fixtures')];
+describe("Stub server in proxy mode", () => {
+  const outputFixturesDir = path.join(__dirname, "generatedFixtures");
+  const fixtureDirs = [path.join(__dirname, "fixtures")];
 
   beforeEach(() => {
     // console.log('=======', listAllFixtures(outputFixturesDir));
@@ -259,41 +319,61 @@ describe('Stub server in proxy mode', async () => {
     emptyDirSync(outputFixturesDir);
   });
 
-  it('should proxy requests and keep correct encoding - gzip', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
-    await request.agent(appserver)
-      .get('/mocked')
-      .set('accept-encoding', 'gzip')
+  it("should proxy requests and keep correct encoding - gzip", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get("/mocked")
+      .set("accept-encoding", "gzip")
       .expect(200)
-      .expect('content-encoding', 'gzip')
-      .then((res: request.Response) => { });
+      .expect("content-encoding", "gzip")
+      .then((res: request.Response) => {});
   });
 
-  it('should proxy requests and keep correct encoding - deflate', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
-    await request.agent(appserver)
-      .get('/mocked')
-      .set('accept-encoding', 'deflate')
+  it("should proxy requests and keep correct encoding - deflate", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get("/mocked")
+      .set("accept-encoding", "deflate")
       .expect(200)
-      .expect('content-encoding', 'deflate')
-      .then((res: request.Response) => { });
+      .expect("content-encoding", "deflate")
+      .then((res: request.Response) => {});
   });
 
-  it('should proxy requests and keep correct encoding - gzip, deflate', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
-    await request.agent(appserver)
-      .get('/mocked')
-      .set('accept-encoding', 'deflate, gzip')
+  it("should proxy requests and keep correct encoding - gzip, deflate", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get("/mocked")
+      .set("accept-encoding", "deflate, gzip")
       .expect(200)
-      .expect('content-encoding', 'deflate')
-      .then((res: request.Response) => { });
+      .expect("content-encoding", "deflate")
+      .then((res: request.Response) => {});
   });
 
-  it('should save correctly decoded fixture to fixturePath ', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
+  it("should save correctly decoded fixture to fixturePath ", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
 
-    await request.agent(appserver)
-      .get('/mocked')
+    await request
+      .agent(appserver)
+      .get("/mocked")
       .expect(200)
       .then((res: request.Response) => {
         const fixturesMap = listAllFixtures(outputFixturesDir);
@@ -307,11 +387,16 @@ describe('Stub server in proxy mode', async () => {
       });
   });
 
-  it('should proxy and save custom variant when cookie record_fixture_variant is set but default fixture is present', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
+  it("should proxy and save custom variant when cookie record_fixture_variant is set but default fixture is present", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
 
-    await request.agent(appserver)
-      .get('/mocked')
+    await request
+      .agent(appserver)
+      .get("/mocked")
       .expect(200)
       .then((res: request.Response) => {
         const fixturesMap = listAllFixtures(outputFixturesDir);
@@ -324,9 +409,10 @@ describe('Stub server in proxy mode', async () => {
         expect(fixture.answer).toBe(42);
       });
 
-    await request.agent(appserver)
-      .get('/mocked')
-      .set('Cookie', 'record_fixture_variant=someVariant')
+    await request
+      .agent(appserver)
+      .get("/mocked")
+      .set("Cookie", "record_fixture_variant=someVariant")
       .expect(200)
       .then((res: request.Response) => {
         const fixturesMap = listAllFixtures(outputFixturesDir);
@@ -340,11 +426,16 @@ describe('Stub server in proxy mode', async () => {
       });
   });
 
-  it('should proxy and save variant derived from request query when no variant specified in cookie', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
+  it("should proxy and save variant derived from request query when no variant specified in cookie", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
 
-    await request.agent(appserver)
-      .get('/mocked?size=10&page=3')
+    await request
+      .agent(appserver)
+      .get("/mocked?size=10&page=3")
       .expect(200)
       .then((res: request.Response) => {
         const fixturesMap = listAllFixtures(outputFixturesDir);
@@ -358,42 +449,63 @@ describe('Stub server in proxy mode', async () => {
       });
   });
 
-  it('should proxy and save fixture to custom cassette', async () => {
-    const cassetteDir = path.join(__dirname, 'empty-vhs');
-    const appserver = server([cassetteDir], 'http://localhost:5000', 'overwritten-by-cassette');
+  it("should proxy and save fixture to custom cassette", async () => {
+    const cassetteDir = path.join(__dirname, "empty-vhs");
+    const appserver = server(
+      [cassetteDir],
+      "http://localhost:5000",
+      "overwritten-by-cassette",
+    );
 
-    await request.agent(appserver)
-      .get('/mocked-vhs')
-      .set('Cookie', `cassette=${cassetteDir}`)
+    await request
+      .agent(appserver)
+      .get("/mocked-vhs")
+      .set("Cookie", `cassette=${cassetteDir}`)
       .expect(200)
       .then((res: request.Response) => {
-        const fixture = require(path.join(cassetteDir, 'mocked-vhs', 'GET.default.json'));
+        const fixture = require(
+          path.join(cassetteDir, "mocked-vhs", "GET.default.json"),
+        );
 
         expect(res.body.answer).toBe(42);
         expect(fixture.answer).toBe(42);
       });
-    
+
     removeSync(cassetteDir);
   });
 
-  it('should proxy requests and keep query params', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
-    await request.agent(appserver)
-      .get('/mocked?query=1')
+  it("should proxy requests and keep query params", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get("/mocked?query=1")
       .expect(200)
       .then((res: request.Response) => {
-        expect(res.header['x-proxied-to']).toBe('http://localhost:5000/mocked?query=1');
+        expect(res.header["x-proxied-to"]).toBe(
+          "http://localhost:5000/mocked?query=1",
+        );
       });
   });
 
-  it('should save correctly decoded fixture to fixturePath for POST request ', async () => {
-    const appserver = server(fixtureDirs, 'http://localhost:5000', outputFixturesDir);
+  it("should save correctly decoded fixture to fixturePath for POST request ", async () => {
+    const appserver = server(
+      fixtureDirs,
+      "http://localhost:5000",
+      outputFixturesDir,
+    );
 
-    await request.agent(appserver)
-      .post('/mocked')
+    await request
+      .agent(appserver)
+      .post("/mocked")
       .send({ bodyProp: 42 })
       .expect(200)
-      .then((res: request.Response) => {
+      .then(async (res: request.Response) => {
+        // Wait a bit for async file write to complete
+        await new Promise((resolve) => setTimeout(resolve, 100));
         const fixturesMap = listAllFixtures(outputFixturesDir);
         expect(Object.keys(fixturesMap).length).toBe(1);
 
