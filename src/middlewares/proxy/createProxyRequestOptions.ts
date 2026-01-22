@@ -1,7 +1,7 @@
 import * as url from 'url';
 import * as path from 'path';
-import {CoreOptions} from 'request';
-import {Request} from 'express';
+import { CoreOptions } from 'request';
+import { Request } from 'express';
 
 const allowedEncodings = ['deflate', 'gzip'];
 

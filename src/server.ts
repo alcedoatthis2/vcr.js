@@ -6,12 +6,12 @@ import * as morgan from 'morgan';
 import listAllFixtures from './listAllFixtures';
 import loadFixture from './loadFixture';
 import proxyMiddleware from './middlewares/proxy';
-import {cleanupVariantsConflicts} from './variants';
-import {Endpoint, extractEndpoints} from './endpoints';
+import { cleanupVariantsConflicts } from './variants';
+import { Endpoint, extractEndpoints } from './endpoints';
 import getFixturesDirs from './getFixturesDirs';
-import {findEndpoint, findFixture, extract, extractVariantsFromRequest} from './matcher';
+import { findEndpoint, findFixture, extract, extractVariantsFromRequest } from './matcher';
 import pipeMiddlewares from './pipeMiddlewares';
-import {Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import * as bodyParser from 'body-parser';
 
 export default (fixtureDirs: string[] = [], realApiBaseUrl?: string, outputDir?: string) => {

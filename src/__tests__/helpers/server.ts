@@ -4,7 +4,7 @@ const app = express();
 
 app.use(handleMockRequest);
 
-app.listen(5000, function(err: Error) {
+app.listen(5000, function (err: Error) {
   if (err) {
     return console.error(err);
   }

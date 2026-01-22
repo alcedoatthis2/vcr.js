@@ -1,7 +1,7 @@
 import * as zlib from 'zlib';
 import * as Stream from 'stream';
 import * as through from 'through';
-import {Request, Response} from 'express';
+import { Request, Response } from 'express';
 
 export const STATUS_TO_RESPONSE = {
   '201': null,
@@ -22,7 +22,7 @@ export const HEADERS = {
 
 const getJson$ = (statusCode: number): Stream.Readable => {
   const status = statusCode.toString();
-  const body = status in STATUS_TO_RESPONSE ? STATUS_TO_RESPONSE[status] : STATUS_TO_RESPONSE.DEFAULT;
+  const body = status in STATUS_TO_RESPONSE ? STATUS_TO_RESPONSE[status as keyof typeof STATUS_TO_RESPONSE] : STATUS_TO_RESPONSE.DEFAULT;
   const json$ = new Stream.Readable;
 
   if (!!body) json$.push(JSON.stringify(body));
