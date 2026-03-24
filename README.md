@@ -1,4 +1,5 @@
 # VCR.js-next2
+[![npm version](https://img.shields.io/npm/v/vcr.js-next2.svg)](https://www.npmjs.com/package/vcr.js-next2)
 
 ## fork of [original blueberryapps/vcr.js](https://github.com/blueberryapps/vcr.js) with [cassettes](#cassettes) feature
 
