@@ -1,4 +1,4 @@
-# VCR.js-next
+# VCR.js-next2
 
 ## fork of [original blueberryapps/vcr.js](https://github.com/blueberryapps/vcr.js) with [cassettes](#cassettes) feature
 
@@ -6,7 +6,7 @@ Mock server with Proxy and Record support inspired by ruby VCR.
 
 ## tl;dr
 ```
-yarn add vcr.js-next
+yarn add vcr.js-next2
 mkdir -p fixtures/users
 echo '{"users": ["Tim", "Tom"]}' > ./fixtures/users/GET.default.json
 yarn vcr -- -f ./fixtures
