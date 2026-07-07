@@ -334,6 +334,32 @@ describe('Stub server in proxy mode', () => {
       .then((res: request.Response) => {});
   });
 
+  it('should not normalize slashes inside the query string', async () => {
+    const appserver = server(
+      fixtureDirs,
+      'http://localhost:5000',
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get('/mocked?query=a/../b&url=https://x.com/y')
+      .expect(200)
+      .expect('x-request-url', '/mocked?query=a/../b&url=https://x.com/y');
+  });
+
+  it('should proxy requests without a supported accept-encoding', async () => {
+    const appserver = server(
+      fixtureDirs,
+      'http://localhost:5000',
+      outputFixturesDir,
+    );
+    await request
+      .agent(appserver)
+      .get('/mocked')
+      .set('accept-encoding', 'identity')
+      .expect(200);
+  });
+
   it('should proxy requests and keep correct encoding - deflate', async () => {
     const appserver = server(
       fixtureDirs,

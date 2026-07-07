@@ -39,6 +39,7 @@ export default (realApiBaseUrl: string, outputDir?: string): RequestHandler =>
           );
           // console.log(`${chalk.magenta('[Stub server]')} request headers: ${JSON.stringify(req.headers, null, 2)}`);
           // console.log(`${chalk.magenta('[Stub server]')} response headers: ${JSON.stringify(proxyRes.headers, null, 2)}`);
+          proxyRes.resume(); // drain so the keep-alive socket is released
           return next();
         }
         // console.log(`${chalk.blue('[Stub server]')} request headers: ${JSON.stringify(req.headers, null, 2)}`);
