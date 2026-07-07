@@ -43,10 +43,11 @@ const parseEncoding = (acceptEncodingHeader: string = ''): {encoding: string, en
   return {encoding, encoder};
 };
 
-const assembleHeaders = (encoding: string) => {
+const assembleHeaders = (encoding: string, requestUrl: string) => {
   return {
     'Content-Type': 'application/json',
-    'content-encoding': encoding
+    'content-encoding': encoding,
+    'x-request-url': requestUrl, // echo so tests can assert the exact proxied URL
   };
 };
 
@@ -61,7 +62,7 @@ export default async function(req: Request, res: Response) {
     const json$ = getJson$(statusCode);
     const encoded$: Stream.Transform = json$.pipe(encoder);
 
-    res.writeHead(statusCode, assembleHeaders(encoding));
+    res.writeHead(statusCode, assembleHeaders(encoding, req.url));
     encoded$.pipe(res);
   }
   // encoded$.pipe(process.stdout);

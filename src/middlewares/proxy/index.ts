@@ -1,7 +1,8 @@
 import * as chalk from 'chalk';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
+import * as http from 'http';
 import { IncomingMessage } from 'http';
-import * as request from 'request';
+import * as https from 'https';
 import { PassThrough } from 'stream';
 import getFixturesDirs from '../../getFixturesDirs';
 import createProxyRequestOptions from './createProxyRequestOptions';
@@ -19,9 +20,12 @@ export default (realApiBaseUrl: string, outputDir?: string): RequestHandler =>
       outputDir ? [outputDir] : [],
     )[0];
 
+    const options = createProxyRequestOptions(req, realApiBaseUrl);
+    const transport = options.protocol === 'https:' ? https : http;
+
     // pipe request from stub server to real API
     req
-      .pipe(request(apiReqURL, createProxyRequestOptions(req, realApiBaseUrl)))
+      .pipe(transport.request(options))
       .on('error', (e: Error) => next(e))
       .on('response', (proxyRes: IncomingMessage) => {
         // response from real API, if not OK, pass control to next
@@ -35,6 +39,7 @@ export default (realApiBaseUrl: string, outputDir?: string): RequestHandler =>
           );
           // console.log(`${chalk.magenta('[Stub server]')} request headers: ${JSON.stringify(req.headers, null, 2)}`);
           // console.log(`${chalk.magenta('[Stub server]')} response headers: ${JSON.stringify(proxyRes.headers, null, 2)}`);
+          proxyRes.resume(); // drain so the keep-alive socket is released
           return next();
         }
         // console.log(`${chalk.blue('[Stub server]')} request headers: ${JSON.stringify(req.headers, null, 2)}`);
